@@ -9,5 +9,6 @@ This tool is provided as-is and was written several years ago as a quick and dir
 ## Changelog
 2020-07-29
 - Added support for VB PictureBox controls. Added static method to FRXResource class to retrieve file type based on provided byte. General clean-up.
+
 2020-07-22
 - Initial commit of files
