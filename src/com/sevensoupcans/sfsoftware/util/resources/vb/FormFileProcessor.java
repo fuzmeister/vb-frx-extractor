@@ -1,6 +1,7 @@
 package com.sevensoupcans.sfsoftware.util.resources.vb;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -59,39 +60,49 @@ public class FormFileProcessor {
 			for (String line = br.readLine(); line != null; line = br.readLine()) 
 			{
 				if(currentImageName != null) 
-				{
-					if(line.toLowerCase().contains("picture = "))
+				{					
+					if(line.toLowerCase().contains("picture = ") && !(line.toLowerCase().contains("me.picture = ")))
 					{
-						String binaryFile = line.substring(line.toLowerCase().indexOf("\"") + 1, line.indexOf(":") - 1);
-						long fileOffset = Long.valueOf(hexToDec(line.substring(line.indexOf(":") + 1)));
-						
-						RandomAccessFile file = new RandomAccessFile(path + binaryFile, "r");							
-						
-						// First 12 bytes contain the file header
-						byte [] headerBytes = new byte[12];
-						file.seek(Long.valueOf(fileOffset));
-						
-						for(int i = 11; i >= 0 ; i--)
+						try
 						{
-							headerBytes[i] = file.readByte();							
+							String binaryFile = line.substring(line.toLowerCase().indexOf("\"") + 1, line.indexOf(":") - 1);
+							long fileOffset = Long.valueOf(hexToDec(line.substring(line.indexOf(":") + 1)));
+							
+							RandomAccessFile file = new RandomAccessFile(path + binaryFile, "r");							
+							
+							// First 12 bytes contain the file header
+							byte [] headerBytes = new byte[12];
+							file.seek(Long.valueOf(fileOffset));
+							
+							for(int i = 11; i >= 0 ; i--)
+							{
+								headerBytes[i] = file.readByte();							
+							}
+							
+							int fileSize = hexToDec(bytesToHex(headerBytes));
+							
+							String fileType = "";
+							try 
+							{
+								fileType = FRXResource.getFileType(file.readByte());
+							} 
+							catch (UnknownFRXFileTypeByteException e) 
+							{						
+								System.out.println(e.getMessage());
+							}
+																			
+							FRXResource vbr = new FRXResource(currentImageName, fileType, binaryFile, path, fileOffset, fileSize);
+							resourceList.add(vbr);
+							file.close();
+							currentImageName = null;							
 						}
-						
-						int fileSize = hexToDec(bytesToHex(headerBytes));
-						
-						// Defaults to BMP though a better way is needed to determine file type
-						String fileType = "bmp";						
-						// GIF
-						if(file.readByte() == 71) {
-							fileType = "gif";
+						catch(FileNotFoundException e)
+						{
+							System.out.println("Filename parsing failed for line: " + line);
 						}
-						
-						FRXResource vbr = new FRXResource(currentImageName, fileType, binaryFile, path, fileOffset, fileSize);
-						resourceList.add(vbr);
-						file.close();
-						currentImageName = null;
 					}
 				}
-				else if(line.toLowerCase().contains("begin image "))
+				else if(line.toLowerCase().contains("begin image ") || line.toLowerCase().contains("begin picturebox "))
 				{
 					currentImageName = line.substring(line.toLowerCase().lastIndexOf(" ") + 1);
 
@@ -103,7 +114,7 @@ public class FormFileProcessor {
 						j++;
 					}
 					usedNames.add(currentImageName);
-				}
+				}				
 			}	
 			
 			br.close();

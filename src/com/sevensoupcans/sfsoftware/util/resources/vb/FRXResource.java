@@ -72,5 +72,22 @@ public final class FRXResource
 	public String toString()
 	{
 		return fileName + ", " + frxFile + ", " + fileOffset + ", " + fileSize;		
-	}	
+	}
+	
+	public static String getFileType(byte fileTypeByte) throws UnknownFRXFileTypeByteException
+	{
+		switch(fileTypeByte)
+		{
+			case 0:
+				return "ico";
+			case -1:
+				return "jpg";
+			case 66:
+				return "bmp";
+			case 71:
+				return "gif";
+			default:
+				throw new UnknownFRXFileTypeByteException("Unknown file type byte: " + fileTypeByte);
+		}
+	}
 }
