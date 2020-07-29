@@ -7,5 +7,7 @@ This tool is provided as-is and was written several years ago as a quick and dir
 **FormFileProcessor** expects 2 + n arguments: an extraction path (E.G. /home/fuzmeister/) followed by the absolute path of at least one Visual Basic .frm file. This was written very lazily and will require some modifications if you want it to work in Windows. ;)
 
 ## Changelog
+2020-07-29
+- Added support for VB PictureBox controls. Added static method to FRXResource class to retrieve file type based on provided byte. General clean-up.
 2020-07-22
 - Initial commit of files
